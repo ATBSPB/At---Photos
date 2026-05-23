@@ -1,0 +1,15 @@
+name = "photoflare"
+main = "src/worker.ts"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./www"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "e57524d3612149a7bd99349c2e7cb3ab"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "photo"

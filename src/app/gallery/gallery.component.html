@@ -1,0 +1,62 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      <h1>At - Photos</h1>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="true">
+  <section class="gallery">
+    <div class="image" *ngFor="let photo of photos ;let i = index">
+      <img *ngFor="let img of photo.images;let j = index"
+      [src]="img.img"
+      [alt]="photo.description"
+      width="100%"
+      (load)="onImageLoad(i)"
+      (click)="openImageOptions(photo, j)">
+    </div>
+  </section>
+  <div *ngIf="photos.length === 0 || photos.length <= cardsToShow">
+    <div class="end-message" *ngIf="isViewInitialized">
+      <p>You've navigated every pixel of our gallery.</p>
+    </div>
+  </div>
+  <!-- Footer Section -->
+  <div class="footer" *ngIf="isViewInitialized">
+    <p>Copyright &copy; {{ currentYear }} ATBSPB. All rights reserved.</p>
+  </div>
+</ion-content>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" *ngIf="lightboxOpen" (click)="closeLightbox()" [@imageZoomAnimation]>
+  <div class="lightbox-container">
+    <button class="nav-btn nav-prev" *ngIf="hasPrevImage()" (click)="prevImage(); $event.stopPropagation()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </button>
+    <div class="lightbox-content" [@imageZoomAnimation]>
+      <!-- Image area -->
+      <div class="lightbox-image-area">
+        <img [src]="currentLightboxImage.img" [alt]="lightboxPhoto.description" class="lightbox-img" />
+      </div>
+
+      <!-- Actions beside image on desktop, below on mobile -->
+      <div class="lightbox-actions" (click)="$event.stopPropagation()">
+        <button class="action-btn share-btn" (click)="shareImage(currentLightboxImage)">
+          <ion-icon name="share-outline"></ion-icon>
+          <span>分享</span>
+        </button>
+        <button class="action-btn view-btn" (click)="viewOriginal(currentLightboxImage)">
+          <ion-icon name="eye-outline"></ion-icon>
+          <span>原图</span>
+        </button>
+        <button class="action-btn download-btn" (click)="downloadImage(currentLightboxImage.img)">
+          <ion-icon name="download-outline"></ion-icon>
+          <span>下载</span>
+        </button>
+      </div>
+    </div>
+    <button class="nav-btn nav-next" *ngIf="hasNextImage()" (click)="nextImage(); $event.stopPropagation()">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </button>
+  </div>
+</div>
