@@ -72,8 +72,6 @@ export class GalleryComponent implements OnInit {
 
   onImageLoad(event: Event, index: number): void {
     this.imageLoaded[index] = true;
-    if (index === 5)
-      this.isViewInitialized = true;
 
     const img = event.target as HTMLImageElement;
     const parent = img.closest('.image') as HTMLElement;
@@ -89,6 +87,13 @@ export class GalleryComponent implements OnInit {
     const colWidth = (gallery.clientWidth - pad * 2 - gap * (cols - 1)) / cols;
     const imgHeight = (img.naturalHeight / img.naturalWidth) * colWidth;
     parent.style.gridRowEnd = `span ${Math.ceil(imgHeight + gap)}`;
+
+    // 等上面所有可见图片都加载完后，再显示底部内容
+    const visibleCount = Math.min(this.cardsToShow, this.totalCards);
+    const loadedCount = this.imageLoaded.filter(Boolean).length;
+    if (loadedCount >= visibleCount) {
+      this.isViewInitialized = true;
+    }
   }
 
   fetchPhotos(): void {
