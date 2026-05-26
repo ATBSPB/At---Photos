@@ -70,10 +70,25 @@ export class GalleryComponent implements OnInit {
     this.titleService.setTitle('At - Photos');
   }
 
-  onImageLoad(index: number): void {
+  onImageLoad(event: Event, index: number): void {
     this.imageLoaded[index] = true;
     if (index === 5)
-      this.isViewInitialized = true
+      this.isViewInitialized = true;
+
+    const img = event.target as HTMLImageElement;
+    const parent = img.closest('.image') as HTMLElement;
+    if (!parent || !img.naturalWidth) return;
+
+    const gallery = document.querySelector('.gallery') as HTMLElement;
+    if (!gallery) return;
+
+    const w = window.innerWidth;
+    const cols = w <= 400 ? 1 : w <= 500 ? 2 : w <= 810 ? 3 : 4;
+    const gap = w <= 500 ? 8 : w <= 810 ? 10 : 12;
+    const pad = w <= 500 ? 8 : w <= 810 ? 12 : 16;
+    const colWidth = (gallery.clientWidth - pad * 2 - gap * (cols - 1)) / cols;
+    const imgHeight = (img.naturalHeight / img.naturalWidth) * colWidth;
+    parent.style.gridRowEnd = `span ${Math.ceil(imgHeight + gap)}`;
   }
 
   fetchPhotos(): void {

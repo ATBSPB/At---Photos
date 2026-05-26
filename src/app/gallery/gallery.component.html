@@ -7,12 +7,11 @@
 </ion-header>
 <ion-content [fullscreen]="true">
   <section class="gallery">
-    <div class="image" *ngFor="let photo of photos ;let i = index">
-      <img *ngFor="let img of photo.images;let j = index"
+    <div class="image" *ngFor="let photo of photos; let i = index">
+      <img *ngFor="let img of photo.images; let j = index"
       [src]="img.img"
       [alt]="photo.description"
-      width="100%"
-      (load)="onImageLoad(i)"
+      (load)="onImageLoad($event, i)"
       (click)="openImageOptions(photo, j)">
     </div>
   </section>
