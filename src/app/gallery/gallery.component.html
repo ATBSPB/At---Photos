@@ -9,7 +9,7 @@
   <section class="gallery">
     <div class="image" *ngFor="let photo of photos; let i = index">
       <img *ngFor="let img of photo.images; let j = index"
-      [src]="img.img"
+      [attr.src]="i <= loadedUpTo ? img.img : null"
       [alt]="photo.description"
       (load)="onImageLoad($event, i)"
       (click)="openImageOptions(photo, j)">

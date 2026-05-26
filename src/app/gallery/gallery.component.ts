@@ -57,6 +57,7 @@ export class GalleryComponent implements OnInit {
   lightboxImageIndex = 0;
   cardsToShow: number = this.calculateCardsToShow();
   totalCards = this.photos.length;
+  loadedUpTo = 0;
 
   constructor(
     private toastController: ToastController,
@@ -72,6 +73,10 @@ export class GalleryComponent implements OnInit {
 
   onImageLoad(event: Event, index: number): void {
     this.imageLoaded[index] = true;
+    if (index === 5)
+      this.isViewInitialized = true;
+
+    this.checkAndLoadNextBatch();
 
     const img = event.target as HTMLImageElement;
     const parent = img.closest('.image') as HTMLElement;
@@ -87,13 +92,49 @@ export class GalleryComponent implements OnInit {
     const colWidth = (gallery.clientWidth - pad * 2 - gap * (cols - 1)) / cols;
     const imgHeight = (img.naturalHeight / img.naturalWidth) * colWidth;
     parent.style.gridRowEnd = `span ${Math.ceil(imgHeight + gap)}`;
+  }
 
-    // 等上面所有可见图片都加载完后，再显示底部内容
-    const visibleCount = Math.min(this.cardsToShow, this.totalCards);
-    const loadedCount = this.imageLoaded.filter(Boolean).length;
-    if (loadedCount >= visibleCount) {
-      this.isViewInitialized = true;
+  private initSequentialLoading(): void {
+    if (this.photos.length === 0) return;
+    const w = window.innerWidth;
+    const cols = w <= 400 ? 1 : w <= 500 ? 2 : w <= 810 ? 3 : 4;
+    this.loadedUpTo = Math.min(cols * 2 - 1, this.photos.length - 1);
+  }
+
+  private checkAndLoadNextBatch(): void {
+    for (let i = 0; i <= this.loadedUpTo && i < this.photos.length; i++) {
+      if (!this.imageLoaded[i] && this.photos[i]?.images?.length > 0) {
+        return;
+      }
     }
+    this.recalculateLayout();
+    if (this.loadedUpTo < this.photos.length - 1) {
+      const w = window.innerWidth;
+      const cols = w <= 400 ? 1 : w <= 500 ? 2 : w <= 810 ? 3 : 4;
+      this.loadedUpTo = Math.min(this.loadedUpTo + cols, this.photos.length - 1);
+    }
+  }
+
+  private recalculateLayout(): void {
+    const gallery = document.querySelector('.gallery') as HTMLElement;
+    if (!gallery) return;
+
+    const w = window.innerWidth;
+    const cols = w <= 400 ? 1 : w <= 500 ? 2 : w <= 810 ? 3 : 4;
+    const gap = w <= 500 ? 8 : w <= 810 ? 10 : 12;
+    const pad = w <= 500 ? 8 : w <= 810 ? 12 : 16;
+    const colWidth = (gallery.clientWidth - pad * 2 - gap * (cols - 1)) / cols;
+
+    const images = gallery.querySelectorAll('.image img') as NodeListOf<HTMLImageElement>;
+    images.forEach((img) => {
+      if (img.naturalWidth > 0) {
+        const parent = img.closest('.image') as HTMLElement;
+        if (parent) {
+          const imgHeight = (img.naturalHeight / img.naturalWidth) * colWidth;
+          parent.style.gridRowEnd = `span ${Math.ceil(imgHeight + gap)}`;
+        }
+      }
+    });
   }
 
   fetchPhotos(): void {
@@ -103,6 +144,7 @@ export class GalleryComponent implements OnInit {
       (data: Photo[]) => {
         this.photos = this.updateImageUrls(data);
         this.totalCards = this.photos.length;
+        this.initSequentialLoading();
       },
       (error) => {
         console.error('Error fetching photos:', error);
